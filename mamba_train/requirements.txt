@@ -1,0 +1,22 @@
+######xwris venve trexw prwta auto: python -m pip install -U pip wheel setuptools
+###h prwta requirements, meta pip install setuptools==36.2.7
+#   meta pip install
+#   meta abc
+#   meta ksana pip install setuptools==49.4.0
+#   kai ksana pip install .
+# kai isws ksana python -m pip install -U pip wheel setuptools==49.4.0, h isws ap thn arxh auto ???!!!
+#ta upoloipa libraries den xreiazontai!!!
+torch
+torchvision
+torchaudio
+packaging
+triton
+timm==0.4.12
+pytest 
+chardet 
+yacs 
+termcolor
+submitit 
+tensorboardX
+fvcore
+seaborn

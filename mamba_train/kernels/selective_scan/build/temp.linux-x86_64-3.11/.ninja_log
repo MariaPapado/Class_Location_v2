@@ -1,0 +1,10 @@
+# ninja log v5
+1	11195	1716395753499612919	/notebooks/MambaCD/kernels/selective_scan/build/temp.linux-x86_64-3.11/csrc/selective_scan/cus/selective_scan_core_fwd.o	d5c8a65bca48f7ff
+1	29513	1716395771811895075	/notebooks/MambaCD/kernels/selective_scan/build/temp.linux-x86_64-3.11/csrc/selective_scan/cus/selective_scan.o	90504fc9f9c5d16e
+1	30862	1716395773147915659	/notebooks/MambaCD/kernels/selective_scan/build/temp.linux-x86_64-3.11/csrc/selective_scan/cus/selective_scan_core_bwd.o	df5601840f0afa9f
+5	10571	1716395784684093379	/notebooks/MambaCD/kernels/selective_scan/build/temp.linux-x86_64-3.11/csrc/selective_scan/cusndstate/selective_scan_core_fwd.o	2ad8535c8954b096
+5	29310	1716395803420381975	/notebooks/MambaCD/kernels/selective_scan/build/temp.linux-x86_64-3.11/csrc/selective_scan/cusndstate/selective_scan_ndstate.o	1f7e0f611b20865e
+5	32078	1716395806156424115	/notebooks/MambaCD/kernels/selective_scan/build/temp.linux-x86_64-3.11/csrc/selective_scan/cusndstate/selective_scan_core_bwd.o	ef668965553b792c
+5	16949	1716395823996698854	/notebooks/MambaCD/kernels/selective_scan/build/temp.linux-x86_64-3.11/csrc/selective_scan/cusoflex/selective_scan_core_fwd.o	ce7a8ef0a9dd26b2
+5	31033	1716395838076915657	/notebooks/MambaCD/kernels/selective_scan/build/temp.linux-x86_64-3.11/csrc/selective_scan/cusoflex/selective_scan_oflex.o	d38aea6a812ecf7
+5	48279	1716395855317181079	/notebooks/MambaCD/kernels/selective_scan/build/temp.linux-x86_64-3.11/csrc/selective_scan/cusoflex/selective_scan_core_bwd.o	a754d5eabf33ec23

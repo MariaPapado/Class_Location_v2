@@ -1,0 +1,4 @@
+ENTOLH
+
+
+python ./changedetection/script/train_MambaBDA.py --dataset 'xBD' --batch_size 8 --crop_size 256 --max_iters 800000 --model_type MambaBDA_Small --model_param_path '/notebooks/MambaCD/changedetection/saved_models' --train_dataset_path '/notebooks/xBD_Nat/train' --train_data_list_path '/notebooks/xBD_Nat/list/train_list.txt' --test_dataset_path '/notebooks/xBD_Nat/val' --test_data_list_path '/notebooks/xBD_Nat/list/val_list.txt' 
