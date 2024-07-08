@@ -1,3 +1,5 @@
+model weights are in: /cephfs/work/maria/Class_Location_v2_models/model_weights
+
 pretrained model from dequan on xBD and openearthmap with data augmentations
 
 the other model is the result that i had using dequan's model as pretrained and training on NatFuel+Grid datasets that i created
