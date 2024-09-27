@@ -51,13 +51,6 @@ def save_tif_coregistered_with_img_id(filename, image, img_id_before, img_id_aft
 
     return True
 
-
-def to_pixel_coords(x, y, min_x, min_y, max_x, max_y, img_width, img_height):
-    pixel_x = (x - min_x) / (max_x - min_x) * img_width
-    pixel_y = (max_y - y) / (max_y - min_y) * img_height  # Invert y-axis for image coordinates
-    return pixel_x, pixel_y
-
-
 #img_ = rasterio.open('/home/mariapap/CODE/CLv2_eval/PIPELINE_RESULTS_withclouds/OUTPUT/output_region_5997149.tif')
 #img_ = rasterio.open('/home/mariapap/CODE/CLv2_eval/PIPELINE_RESULTS_withclouds/OUTPUT_reg/5996980.tif')
 img = rasterio.open('/home/mariapap/CODE/CLv2_eval/PIPELINE_RESULTS/OUTPUT_reg/5996659.tif')
