@@ -134,10 +134,12 @@ with psycopg.connect(connection_string) as conn:
                     if check_good[0]['region_id'] > 0:
                         target_img = download_from_mapserver(best_img, region['bounds'].bounds, (creds_mapserver['username'], creds_mapserver['password']))
                         img_id_save = best_img['image_id']
+                        capture_timestamp = best_img['capture_timestamp']
                         total_chosen = total_chosen + 1
                     elif check_good[0]['region_id'] < 0:
                         target_img = download_from_mapserver(best_img, region['bounds'].bounds, (creds_mapserver['username'], creds_mapserver['password']))
                         img_id_save = best_img['image_id']
+                        capture_timestamp = best_img['capture_timestamp']
 
                         filter_buildings_mask_file = rasterio.open('/cephfs/pimsys/coregistration/basemaps/regions_buildings/region_{}.tif'.format(region['id']))
                         window = rasterio.windows.from_bounds(*region['bounds'].bounds, filter_buildings_mask_file.transform)
@@ -150,6 +152,8 @@ with psycopg.connect(connection_string) as conn:
                         #print('shape', ref_img.shape, target_img.shape, filter_buildings_mask.shape)
 
                         filter_buildings_mask = filter_buildings_mask > 0   ######CHECK AGAIN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+                        print(ref_img.shape, target_img.shape, filter_buildings_mask.shape)
                         
                         flag_doc, repeat_reg_img = pass_image2docker(ref_img, target_img, filter_buildings_mask, 'http://10.10.100.8:8062/api/process')
 
@@ -161,7 +165,7 @@ with psycopg.connect(connection_string) as conn:
                         else:
                             bad_regions.append(region['id'])                        
 
-                    save_tif_coregistered('{}/{}.tif'.format('./May_images/',region['id']), target_img, img_id_save, geometry.Polygon.from_bounds(region['bounds'].bounds[0], region['bounds'].bounds[1], region['bounds'].bounds[2], region['bounds'].bounds[3]), channels = 3)
+                    save_tif_coregistered('{}/{}.tif'.format('./May_images/',region['id']), target_img, img_id_save, capture_timestamp, geometry.Polygon.from_bounds(region['bounds'].bounds[0], region['bounds'].bounds[1], region['bounds'].bounds[2], region['bounds'].bounds[3]), channels = 3)
                 else:
                     print('BLANK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 
