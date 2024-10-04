@@ -68,10 +68,10 @@ def get_polygons_from_changes(changes, poly, connectivity=4):
     return result
 
 
-def save_tif_coregistered_with_img_id(filename, image, img_id_before, img_id_after, poly, channels=1, factor=1):
+def save_tif_coregistered_with_params(filename, image, xparams, poly, channels=1, factor=1):
     height, width = image.shape[0], image.shape[1]
     geotiff_transform = rasterio.transform.from_bounds(poly[0], poly[1],
-                                                       poly[2], poly[3],
+                                                       bounds[2], poly[3],
                                                        width/factor, height/factor)
 
     with rasterio.open(filename, 'w', driver='GTiff',
@@ -86,12 +86,13 @@ def save_tif_coregistered_with_img_id(filename, image, img_id_before, img_id_aft
         else:
            dst.write(image, 1)
 
-        dst.update_tags(img_id_before='{}'.format(img_id_before))
-        dst.update_tags(img_id_after='{}'.format(img_id_after))
+        dst.update_tags(**xparams)
+#        dst.update_tags(img_id_after='{}'.format(xparams['id_before']))
         
     dst.close()
 
     return True
+
 
 project_name = 'National-Fuel-2024'
 
@@ -117,15 +118,19 @@ corridor = get_corridor(pipes, buffer=project['pipeline_monitoring_distance'])
 #print(corridor)
 
 
-ids = os.listdir('./OUTPUT_valid/')
+ids = os.listdir('./PIPELINE_RESULTS/OUTPUT_valid/')
 
+xparams={}
 for _, id in enumerate(tqdm(ids)):
     print(id)
-    img = rasterio.open('./OUTPUT_valid/{}'.format(id))
+    img = rasterio.open('./PIPELINE_RESULTS/OUTPUT_valid/{}'.format(id))
     bounds = img.bounds
 
-    img1_id = img.tags()['img_id_before']
-    img2_id = img.tags()['img_id_after']
+    xparams['id_before'] = img.tags()['id_before']
+    xparams['id_after'] = img.tags()['id_after']
+
+    xparams['ctime_before'] = img.tags()['ctime_before']
+    xparams['ctime_after'] = img.tags()['ctime_after']
 
     img = img.read()
     img = np.transpose(img, (1,2,0))
@@ -176,13 +181,13 @@ for _, id in enumerate(tqdm(ids)):
         idx0 = np.where(final_polys==0)   
         for ch in range(0, img.shape[2]):
             img[:,:,ch][idx0] = 0
-        save_tif_coregistered_with_img_id('./OUTPUT_incorridor/{}'.format(id), img, img1_id, img2_id, bounds, channels=3)
+        save_tif_coregistered_with_params('./PIPELINE_RESULTS/OUTPUT_incorridor/{}'.format(id), img, xparams, bounds, channels=3)
 
 #        print(final_polys.shape) 
 #        print('UNIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII', np.unique(final_polys)) 
 #        print(np.unique(im_zeros))
     else:
-        save_tif_coregistered_with_img_id('./OUTPUT_incorridor/{}'.format(id), np.zeros((img.shape[0],img.shape[1], img.shape[2])), img1_id, img2_id, bounds, channels=3)
+        save_tif_coregistered_with_params('./PIPELINE_RESULTS/OUTPUT_incorridor/{}'.format(id), np.zeros((img.shape[0],img.shape[1], img.shape[2])), xparams, bounds, channels=3)
 
 
 
