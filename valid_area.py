@@ -13,6 +13,7 @@ import rasterio
 import numpy as np
 import rasterio.features
 import imageio
+from shapely.geometry import box
 
 
 def get_polygons_from_changes(changes, poly, connectivity=4):
@@ -32,28 +33,30 @@ def get_polygons_from_changes(changes, poly, connectivity=4):
     return result
 
 
-def save_tif_coregistered(filename, image, poly, channels=1, factor=1):
+def save_tif_coregistered_with_params(filename, image, xparams, poly, channels=1, factor=1):
     height, width = image.shape[0], image.shape[1]
-    geotiff_transform = rasterio.transform.from_bounds(poly.bounds[0], poly.bounds[1],
-                                                       poly.bounds[2], poly.bounds[3],
+    geotiff_transform = rasterio.transform.from_bounds(poly[0], poly[1],
+                                                       poly[2], poly[3],
                                                        width/factor, height/factor)
 
-    new_dataset = rasterio.open(filename, 'w', driver='GTiff',
+    with rasterio.open(filename, 'w', driver='GTiff',
                                 height=height/factor, width=width/factor,
                                 count=channels, dtype='uint8',
                                 crs='+proj=latlong',
-                                transform=geotiff_transform)
+                                transform=geotiff_transform) as dst:
+   # Write bands
+        if channels>1:
+         for ch in range(0, image.shape[2]):
+           dst.write(image[:,:,ch], ch+1)
+        else:
+           dst.write(image, 1)
 
-    # Write bands
-    if channels>1:
-     for ch in range(0, image.shape[2]):
-       new_dataset.write(image[:,:,ch], ch+1)
-    else:
-       new_dataset.write(image, 1)
-    new_dataset.close()
+        dst.update_tags(**xparams)
+#        dst.update_tags(img_id_after='{}'.format(xparams['id_before']))
+        
+    dst.close()
 
     return True
-
 
 
 def get_wms_image_by_id(image_id, creds_mapserver, settings_db):
@@ -70,29 +73,39 @@ settings_db = ov.get_sarccdb_credentials()
 creds_mapserver = ov.get_image_broker_credentials()
 
 
-ids = os.listdir('./out_Fuel/B/')
+#ids = os.listdir('./out_Fuel/B/')
+ids = os.listdir('./PIPELINE_RESULTS/OUTPUT/')
 
 #ids = ['data_region_9773089.p']
-
+xparams={}
 for _, id in enumerate(tqdm(ids)):
     print(id)
-    pfile1 = pd.read_pickle('./out_Fuel/A/{}'.format(id))
-    pfile2 = pd.read_pickle('./out_Fuel/B/{}'.format(id))
+    img = rasterio.open('./PIPELINE_RESULTS/OUTPUT/{}'.format(id))
 
-    img1_id = pfile1['image_id']
-    img2_id = pfile2['image_id']
 
-    wms_image_list_a = get_wms_image_by_id(img1_id, creds_mapserver, settings_db)
-    wms_image_list_b = get_wms_image_by_id(img2_id, creds_mapserver, settings_db)
+#    pfile1 = pd.read_pickle('./out_Fuel/A/{}'.format(id))
+#    pfile2 = pd.read_pickle('./out_Fuel/B/{}'.format(id))
+
+    bounds = img.bounds
+    im_poly = box(bounds.left, bounds.bottom, bounds.right, bounds.top)
+
+    xparams['id_before'] = img.tags()['id_before']
+    xparams['id_after'] = img.tags()['id_after']
+
+    xparams['ctime_before'] = img.tags()['ctime_before']
+    xparams['ctime_after'] = img.tags()['ctime_after']
+
+    wms_image_list_a = get_wms_image_by_id(xparams['id_before'], creds_mapserver, settings_db)
+    wms_image_list_b = get_wms_image_by_id(xparams['id_after'], creds_mapserver, settings_db)
  
     valid_area_tot_a = ops.unary_union(wms_image_list_a['valid_area']).buffer(0.0)
     valid_area_tot_b = ops.unary_union(wms_image_list_b['valid_area']).buffer(0.0)
 
     valid_area_tot = valid_area_tot_a.intersection(valid_area_tot_b)
 
-    pred = rasterio.open('./PIPELINE_RESULTS_Fuel/regularized/{}.tif'.format(pfile1['region_id']))
+#    pred = rasterio.open('./PIPELINE_RESULTS_Fuel/regularized/{}.tif'.format(pfile1['region_id']))
+    pred = img.read()
 
-    pred = pred.read()
     pred = np.transpose(pred, (1,2,0))
     idx = np.where(pred!=[0,0,0])
 
@@ -102,8 +115,8 @@ for _, id in enumerate(tqdm(ids)):
 
     height, width = pred.shape[0], pred.shape[1]
 
-    geotiff_transform = rasterio.transform.from_bounds(pfile1['poly'].bounds[0], pfile1['poly'].bounds[1],
-                                                       pfile1['poly'].bounds[2], pfile1['poly'].bounds[3],
+    geotiff_transform = rasterio.transform.from_bounds(bounds[0], bounds[1],
+                                                       bounds[2], bounds[3],
                                                        width, height)
 
 
@@ -128,15 +141,13 @@ for _, id in enumerate(tqdm(ids)):
           pred[:,:,0][idx0]=0
           pred[:,:,1][idx0]=0      
           pred[:,:,2][idx0]=0      
-          save_tif_coregistered('./PIPELINE_RESULTS_Fuel/OUTPUT_valid/{}.tif'.format(pfile1['region_id']), pred, pfile1['poly'], channels=3)
+          save_tif_coregistered_with_params('./PIPELINE_RESULTS/OUTPUT_valid/{}'.format(id), pred, xparams, bounds, channels=3)
         except:
           print('EXCEPTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT')
-          save_tif_coregistered('./PIPELINE_RESULTS_Fuel/OUTPUT_valid/{}.tif'.format(pfile1['region_id']), pred, pfile1['poly'], channels=3)
+          save_tif_coregistered_with_params('./PIPELINE_RESULTS/OUTPUT_valid/{}'.format(id), pred, xparams, bounds, channels=3)
 
 
     else:
-        save_tif_coregistered('./PIPELINE_RESULTS_Fuel/OUTPUT_valid/{}.tif'.format(pfile1['region_id']), pred, pfile1['poly'], channels=3)
+        save_tif_coregistered_with_params('./PIPELINE_RESULTS/OUTPUT_valid/{}'.format(id), pred, xparams, bounds, channels=3)
 
         print('else')
-
-
